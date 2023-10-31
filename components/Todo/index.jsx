@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import useForm from '../../hooks/form';
+import React, { useEffect, useState, useContext } from 'react';
+import { SettingsContext } from '../../context/Settings/SettingsProvider';
+import useForm from '../../hooks/useForm';
+import { Pagination } from '@mantine/core';
 
 import { v4 as uuid } from 'uuid';
 
 const Todo = () => {
 
+  const settings = useContext(SettingsContext); // opt in to our providers data! If no provider is present, this will be undefined.
+  console.log(settings);
   const [defaultValues] = useState({
     difficulty: 4,
   });
@@ -20,21 +24,29 @@ const Todo = () => {
   }
 
   function deleteItem(id) {
-    const items = list.filter( item => item.id !== id );
+    const items = list.filter(item => item.id !== id);
     setList(items);
   }
 
   function toggleComplete(id) {
 
-    const items = list.map( item => {
-      if ( item.id === id ) {
-        item.complete = ! item.complete;
+    const items = list.map(item => {
+      if (item.id === id) {
+        item.complete = !item.complete;
       }
       return item;
     });
 
     setList(items);
 
+  }
+
+  const calculateTotal  = () => Math.ceil(list.length / settings.displayItems);
+
+  const handlePagination = () => {
+    // seperate into groups
+
+    // find the next {displayItems} to render
   }
 
   useEffect(() => {
@@ -44,7 +56,7 @@ const Todo = () => {
     // linter will want 'incomplete' added to dependency array unnecessarily. 
     // disable code used to avoid linter warning 
     // eslint-disable-next-line react-hooks/exhaustive-deps 
-  }, [list]);  
+  }, [list]);
 
   return (
     <>
@@ -85,7 +97,7 @@ const Todo = () => {
           <hr />
         </div>
       ))}
-
+      <Pagination value={1} total={calculateTotal()} onChange={handlePagination} />
     </>
   );
 };
