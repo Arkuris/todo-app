@@ -1,2 +1,2 @@
 # ToDo-Application! 
-- Labs 31 and 32 should be up and running. 
+- Labs 31 and 32 should be done and working as intended... 
