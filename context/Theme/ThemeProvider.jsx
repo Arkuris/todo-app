@@ -10,6 +10,7 @@ function ThemeProvider(props) {
   const [secondaryColor, setSecondaryColor] = useState('#ffffff');
 
   const toggleMode = () => {
+    console.log("Toggling theme mode...");
     if (mode === 'light') {
       setMode('dark');
     } else {
@@ -20,15 +21,15 @@ function ThemeProvider(props) {
 
   useEffect(() => {
     // Load from localStorage!!
-  }, []); // deliberatly blank so the effect only runs on "mount"
+  }, []); // deliberately blank so the effect only runs on "mount"
 
   useEffect(() => {
     if (mode === 'light') {
-      setPrimaryColor('#89CFF0');
-      setSecondaryColor('#ffffff');
+      setPrimaryColor('#89CFF0');  // Light blue for light mode
+      setSecondaryColor('#ffffff'); // White background for light mode
     } else {
-      setPrimaryColor('#ffffff');
-      setSecondaryColor('#89CFF0');
+      setPrimaryColor('#4A90E2');  // Slightly darker blue for dark mode
+      setSecondaryColor('#000000'); // Light gray background for dark mode
     }
   }, [mode])
 
