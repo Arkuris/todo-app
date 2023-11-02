@@ -5,6 +5,10 @@ import { Pagination } from '@mantine/core';
 import { v4 as uuid } from 'uuid';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import Auth from '../Auth.jsx';
+import { AuthContext } from '../../context/AuthContext.jsx';
+import Login from '../Login.jsx';
+
 
 
 const Todo = () => {
@@ -18,6 +22,8 @@ const Todo = () => {
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showTasksModal, setShowTasksModal] = useState(false);
   const { handleChange, handleSubmit } = useForm(addItem, defaultValues);
+  const { isAuthenticated, logout } = useContext(AuthContext);
+
 
   function addItem(item) {
     item.id = uuid();
@@ -59,16 +65,31 @@ const Todo = () => {
   const handleAddItemModalShow = () => setShowAddItemModal(true);
   const handleTasksModalClose = () => setShowTasksModal(false);
   const handleTasksModalShow = () => setShowTasksModal(true);
+
   
   return (
     <>
-      <header data-testid="todo-header">
-        <h1 data-testid="todo-h1">To Do List: {incomplete} items pending</h1>
-      </header>
+    <header data-testid="todo-header">
+    <h1 data-testid="todo-h1">To Do List: {incomplete} items pending</h1>
+    </header>
+
+    {/* Login/Logout button */}
+    <div className="mb-3">
+        {isAuthenticated ? (
+            <Login />
+        ) : (
+            <Button variant="danger" onClick={logout}>
+                Logout
+            </Button>
+        )}
+    </div>
 
       {/* Add Item Modal Trigger Button */}
       <Button variant="primary" onClick={handleAddItemModalShow}>
         Add New Todo
+        <Auth capability="create">
+          Add New Todo
+        </Auth>
       </Button>
 
       {/* Tasks Modal Trigger Button */}
@@ -109,23 +130,29 @@ const Todo = () => {
           <Modal.Title>Tasks</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {itemsToDisplay.map(item => (
-            <div key={item.id}>
-              <p>{item.text}</p>
-              <p><small>Assigned to: {item.assignee}</small></p>
-              <p><small>Difficulty: {item.difficulty}</small></p>
-              <div onClick={() => toggleComplete(item.id)}>
-                Complete: {item.complete.toString()}
+          <Auth capability="read">
+            {itemsToDisplay.map(item => (
+              <div key={item.id}>
+                <p>{item.text}</p>
+                <p><small>Assigned to: {item.assignee}</small></p>
+                <p><small>Difficulty: {item.difficulty}</small></p>
+                <div onClick={() => toggleComplete(item.id)}>
+                  Complete: {item.complete.toString()}
+                </div>
+                <Auth capability="delete">
+                  <Button onClick={() => deleteItem(item.id)} variant="danger" className="mr-2">
+                    Delete
+                  </Button>
+                </Auth>
+                <Auth capability="update">
+                  <Button onClick={() => toggleComplete(item.id)} variant="warning">
+                    Toggle Status
+                  </Button>
+                </Auth>
+                <hr />
               </div>
-              <Button onClick={() => deleteItem(item.id)} variant="danger" className="mr-2">
-                Delete
-              </Button>
-              <Button onClick={() => toggleComplete(item.id)} variant="warning">
-                Toggle Status
-              </Button>
-              <hr />
-            </div>
-          ))}
+            ))}
+          </Auth>
           <Pagination value={currentPage} total={calculateTotal()} onChange={handlePagination} />
         </Modal.Body>
       </Modal>
