@@ -8,6 +8,7 @@ import Button from 'react-bootstrap/Button';
 import Auth from '../Auth.jsx';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import Login from '../Login.jsx';
+import useAxios from '../../hooks/axios.js';
 
 
 
@@ -21,30 +22,67 @@ const Todo = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showTasksModal, setShowTasksModal] = useState(false);
-  const { handleChange, handleSubmit } = useForm(addItem, defaultValues);
   const { isAuthenticated, logout } = useContext(AuthContext);
+  const axios = useAxios();
 
+  const addItem = async (item) => {
+    try {
+      const newItem = { ...item, id: uuid(), complete: false };
+      const response = await axios.post('/todo', newItem);
+      setList((prevList) => [...prevList, response.data]);
+      handleAddItemModalClose();
+    } catch (error) {
+      console.error("Error adding todo: ", error.response);
+    }
+  };
 
-  function addItem(item) {
-    item.id = uuid();
-    item.complete = false;
-    setList([...list, item]);
-  }
-
-  function deleteItem(id) {
-    const items = list.filter(item => item.id !== id);
-    setList(items);
-  }
-
-  function toggleComplete(id) {
-    const items = list.map(item => {
-      if (item.id === id) {
-        item.complete = !item.complete;
+  useEffect(() => {
+    const fetchList = async () => {
+      try {
+        const response = await axios.get('/todo');
+        setList(response.data);
+      } catch (error) {
+        console.error("Error fetching todos: ", error.response);
       }
-      return item;
-    });
-    setList(items);
-  }
+    };
+
+    fetchList();
+  }, []);
+
+  useEffect(() => {
+    const fetchList = async () => {
+      try {
+        const response = await axios.get('/todo');
+        setList(response.data);
+      } catch (error) {
+        console.error("Error fetching todos: ", error.response);
+      }
+    };
+
+    fetchList();
+  }, []);
+
+  const deleteItem = async (id) => {
+    try {
+      await axios.delete(`/todo/${id}`);
+      const items = list.filter(item => item.id !== id);
+      setList(items);
+    } catch (error) {
+      console.error("Error deleting todo: ", error.response);
+    }
+  };
+
+  const toggleComplete = async (id) => {
+    try {
+      const item = list.find(item => item.id === id);
+      const updatedItem = { ...item, complete: !item.complete };
+      const response = await axios.put(`/todo/${id}`, updatedItem);
+      const items = list.map(item => item.id === id ? response.data : item);
+      setList(items);
+    } catch (error) {
+      console.error("Error toggling todo complete: ", error.response);
+    }
+  };
 
   const calculateTotal = () => Math.ceil(list.length / settings.displayItems);
 
@@ -58,6 +96,7 @@ const Todo = () => {
     document.title = `To Do List: ${incomplete}`;
   }, [list]);
 
+  const { handleChange, handleSubmit, values, resetForm } = useForm(addItem, defaultValues);
   const start = (currentPage - 1) * settings.displayItems;
   const end = start + settings.displayItems;
   const itemsToDisplay = list.slice(start, end);
@@ -73,20 +112,19 @@ const Todo = () => {
     <h1 data-testid="todo-h1">To Do List: {incomplete} items pending</h1>
     </header>
 
-    {/* Login/Logout button */}
-    <div className="mb-3">
-        {isAuthenticated ? (
-            <Login />
-        ) : (
-            <Button variant="danger" onClick={logout}>
-                Logout
-            </Button>
-        )}
-    </div>
+      {/* Login/Logout button */}
+      <div className="mb-3">
+          {isAuthenticated ? (
+              <Button variant="danger" onClick={logout}>
+                  Logout
+              </Button>
+          ) : (
+              <Login />
+          )}
+      </div>
 
       {/* Add Item Modal Trigger Button */}
       <Button variant="primary" onClick={handleAddItemModalShow}>
-        Add New Todo
         <Auth capability="create">
           Add New Todo
         </Auth>
