@@ -1,5 +1,3 @@
-// Login.jsx
-
 import React, { useContext, useState } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
 import Button from 'react-bootstrap/Button';
